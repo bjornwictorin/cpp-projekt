@@ -24,7 +24,7 @@ bool Database::createNewsgroup(string title){
 			return false;
 		}
 	}
-	newsgroups.insert(make_pair(groupid, Newsgroup(title)));
+	newsgroups.insert(make_pair(groupid, Newsgroup(title, groupid)));
 	++groupid;
 	return true;
 }

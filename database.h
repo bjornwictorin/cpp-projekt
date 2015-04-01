@@ -55,13 +55,13 @@ int main(){
 	
 	cout<<endl;
 	cout<<"Test av delete article"<<endl;
-	d.deleteArticle(2, 1);
+	d.deleteArticle(2, 10);
 	for(auto a : d.listArticlesInNewsgroup(2)){
 		a.print();
 	}
 	cout<<endl;
 	cout<<"Test av get article"<<endl;
-	d.getArticle(2,1).print();
+	d.getArticle(2,10).print();
 }
 
 
