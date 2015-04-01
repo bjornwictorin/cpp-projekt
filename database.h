@@ -21,6 +21,8 @@ public:
 	bool createArticle(unsigned int id, string title, string author, string text);
 	bool deleteArticle(unsigned int groupid, unsigned int articleid);
 	Article getArticle(unsigned int groupid, unsigned int articleid);
+	bool containsNewsgroup(unsigned int id);
+	bool containsArticle(unsigned int groupid, unsigned int articleid);
 
 private:
 	map<unsigned int, Newsgroup> newsgroups;

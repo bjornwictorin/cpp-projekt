@@ -65,3 +65,16 @@ Article Database::getArticle(unsigned int groupid, unsigned int articleid){
 	}
 	return newsgroups.at(groupid).getArticle(articleid);
 }
+
+bool Database::containsNewsgroup(unsigned int id){
+	return newsgroups.find(id)!=newsgroups.end();
+}
+
+bool Database::containsArticle(unsigned int groupid, unsigned int articleid){
+	try{
+		getArticle(groupid,articleid);
+	}catch(exception& e){
+		return false;
+	}
+	return true;
+}
