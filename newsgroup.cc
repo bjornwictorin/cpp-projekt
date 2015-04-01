@@ -43,3 +43,7 @@ void printAll(){
 		a.print();
 	}
 }
+
+string getName(){
+	return name;
+}

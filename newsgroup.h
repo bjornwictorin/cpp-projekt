@@ -14,6 +14,7 @@ public:
 	Article getArticle(int id);	
 	bool createArticle(Article a);
 	void printAll();
+	std::string getName();
 private:
 	List<Article> articleList;
 	int count;
