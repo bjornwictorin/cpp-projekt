@@ -12,11 +12,11 @@ database
 	(spara på hårddisk)
 
 newsgroup
-	info
-	printa alla artiklar-funktion
-	dela ut id-nummer till artiklar
-	håller koll på sina artiklar
+x	info
+x	printa alla artiklar-funktion
+x	dela ut id-nummer till artiklar
+x	håller koll på sina artiklar
 
 article
-	info
-	printfunktion
+x	info
+x	printfunktion

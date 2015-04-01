@@ -6,17 +6,31 @@
 #include "article.h"
 
 static unsigned int uniqueid = 0;
-class NewsGroup{
+class Newsgroup{
 public:
-	bool delete_article(int id);
-	Article edit_article(Article a);
-	Article get_article(int id);	
-	bool create_article(Article a);
+	Newsgroup(string name);
+	bool deleteArticle(int id);
+	Article getArticle(int id);
+	std::list<Article> getAllArticles();
+	bool createArticle(std::string author, std::string title, std::string text);
+	void printAll();
+	std::string getName();
 private:
-	List<Article> article_list;
+	std::list<Article> articleList;
 	int count;
-	std::string group_name;
-	int group_id;
+	std::string name;
 };
 
+int main(){
+	Newsgroup n("Test");
+	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
+	n.createArticle("marc", "HeHE", "Folk i källaren");
+	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
+	n.deleteArticle(0);
+	n.printAll();
+	cout<<n.getName()<<endl;
+	for(auto a : n.getAllArticles()){
+	a.print();
+	}
+}
 #endif
