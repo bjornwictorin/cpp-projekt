@@ -1,0 +1,22 @@
+yourserver 
+	
+	MessageHandler
+		översätter connection protocol till kommandon
+	Interface_till_databas
+		få kommandon från messagehandler 
+
+database
+	hålla alla newsgroups i en lämplig datastruktur (hashmap)
+	samma metoder som newsgroup, ta bort, lägg till 
+	utföra alla kommandon från message protocol
+	(spara på hårddisk)
+
+newsgroup
+	info
+	printa alla artiklar-funktion
+	dela ut id-nummer till artiklar
+	håller koll på sina artiklar
+
+article
+	info
+	printfunktion

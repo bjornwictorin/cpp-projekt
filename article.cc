@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Article::Article(string author, string title, string text, unsigned int id) : author(author), title(title), text(text) {}//, id(id) {} 
+Article::Article(string author, string title, string text, unsigned int id) : author(author), title(title), text(text), id(id) {} 
 
 string Article::getAuthor() const{
 	return author;
@@ -27,5 +27,5 @@ bool Article::operator==(const Article& a){
 }
 
 bool Article::operator!=(const Article& a){
-	return !(this==a);
+	return !(*this==a);
 }

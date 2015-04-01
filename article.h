@@ -43,5 +43,5 @@ int main(){
 	if(a==a){
 		cout<<"rätt"<<endl;
 	}
-
+}
 #endif
