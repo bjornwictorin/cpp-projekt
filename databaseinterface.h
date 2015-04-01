@@ -11,7 +11,8 @@ public:
 	virtual bool createArticle(unsigned int id, std::string title, std::string author, std::string text)= 0;
 	virtual bool deleteArticle(unsigned int groupid, unsigned int articleid)= 0;
 	virtual Article getArticle(unsigned int groupid, unsigned int articleid) const= 0;
-	
+	virtual bool containsNewsgroup(unsigned int id) =0;
+	virtual bool containsArticle(unsigned int groupid, unsigned int articleid)=0;
 };
 
 
