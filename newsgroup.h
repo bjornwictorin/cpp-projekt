@@ -11,7 +11,8 @@ public:
 	Newsgroup(string name);
 	bool deleteArticle(int id);
 	Article editArticle(Article a);
-	Article getArticle(int id);	
+	Article getArticle(int id);
+	List<Article> getAllArticles();
 	bool createArticle(Article a);
 	void printAll();
 	std::string getName();

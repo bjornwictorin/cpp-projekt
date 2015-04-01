@@ -20,7 +20,7 @@ bool deleteArticle(int id){
 	}
 }
 
-Article get_article(int id){
+Article getArticle(int id){
 	auto it = article_list.begin();
 	auto end = article_list.end();
 	Article a = Article("", "", "", id);
@@ -29,6 +29,14 @@ Article get_article(int id){
 	}else{
 		return null;
 	}
+}
+
+List<Article> getAllArticles(){
+	List<Article> temp;
+	for(Article a : articleList){
+		temp.add(a);
+	}
+	return temp;
 }
 
 bool createArticle(string author, string title, string text){
