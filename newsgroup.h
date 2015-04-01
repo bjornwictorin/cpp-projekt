@@ -6,9 +6,9 @@
 #include "article.h"
 
 static unsigned int uniqueid = 0;
-class NewsGroup{
+class Newsgroup{
 public:
-	NewsGroup(string name);
+	Newsgroup(string name);
 	bool deleteArticle(int id);
 	Article editArticle(Article a);
 	Article getArticle(int id);	

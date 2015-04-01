@@ -5,7 +5,7 @@
 
 using namespace std;
 
-NewsGroup::NewsGroup(string name) : name(name){}
+Newsgroup::Newsgroup(string name) : name(name){}
 
 bool deleteArticle(int id){
 	auto it = articleList.begin();	
