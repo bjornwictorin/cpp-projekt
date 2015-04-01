@@ -28,7 +28,7 @@ private:
 	
 };
 
-int main(){
+/*int main(){
 	Article a("marc", "hej", "text", 1);
 	Article b("marc", "hej", "text", 2);
 	Article c("a", "b", "x", 1);
@@ -44,5 +44,5 @@ int main(){
 	if(a==a){
 		cout<<"rätt"<<endl;
 	}
-}
+}*/
 #endif

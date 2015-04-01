@@ -1,18 +1,19 @@
 
 
-#include <Algorithm>
+#include <algorithm>
+#include <exception>
 #include "newsgroup.h"
 
 using namespace std;
 
 Newsgroup::Newsgroup(string name) : name(name){}
 
-bool deleteArticle(int id){
+bool Newsgroup::deleteArticle(int id){
 	auto it = articleList.begin();	
 	auto end = articleList.end();
 	Article a = Article("", "", "", id);
 	if(find(it, end, a) != end){
-		articleList.remove(articleList.get(it));
+		articleList.remove(*it);
 		--count;
 		return true;
 	}else{
@@ -20,38 +21,38 @@ bool deleteArticle(int id){
 	}
 }
 
-Article getArticle(int id){
-	auto it = article_list.begin();
-	auto end = article_list.end();
+Article Newsgroup::getArticle(int id){
+	auto it = articleList.begin();
+	auto end = articleList.end();
 	Article a = Article("", "", "", id);
 	if(find(it, end, a) != end){
-		return article_list.get(it);
+		return *it;
 	}else{
-		return null;
+		throw out_of_range("could not find article");
 	}
 }
 
-List<Article> getAllArticles(){
-	List<Article> temp;
+list<Article> Newsgroup::getAllArticles(){
+	list<Article> temp;
 	for(Article a : articleList){
-		temp.add(a);
+		temp.push_back(a);
 	}
 	return temp;
 }
 
-bool createArticle(string author, string title, string text){
-	articleList.add(Article(author, title, text, uniqueid));
+bool Newsgroup::createArticle(string author, string title, string text){
+	articleList.push_back(Article(author, title, text, uniqueid));
 	++uniqueid;
 	++count;
 	return true;
 }
 
-void printAll(){
+void Newsgroup::printAll(){
 	for(Article a : articleList){
 		a.print();
 	}
 }
 
-string getName(){
+string Newsgroup::getName(){
 	return name;
 }

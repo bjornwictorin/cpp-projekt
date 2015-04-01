@@ -10,16 +10,27 @@ class Newsgroup{
 public:
 	Newsgroup(string name);
 	bool deleteArticle(int id);
-	Article editArticle(Article a);
 	Article getArticle(int id);
-	List<Article> getAllArticles();
-	bool createArticle(Article a);
+	std::list<Article> getAllArticles();
+	bool createArticle(std::string author, std::string title, std::string text);
 	void printAll();
 	std::string getName();
 private:
-	List<Article> articleList;
+	std::list<Article> articleList;
 	int count;
 	std::string name;
 };
 
+int main(){
+	Newsgroup n("Test");
+	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
+	n.createArticle("marc", "HeHE", "Folk i källaren");
+	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
+	n.deleteArticle(0);
+	n.printAll();
+	cout<<n.getName()<<endl;
+	for(auto a : n.getAllArticles()){
+	a.print();
+	}
+}
 #endif
