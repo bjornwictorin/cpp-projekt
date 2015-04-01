@@ -24,7 +24,7 @@ bool Database::createNewsgroup(string title){
 			return false;
 		}
 	}
-	newsgroups.insert(make_pair(groupid, Newsgroup(title)));
+	newsgroups.insert(make_pair(groupid, Newsgroup(title, groupid)));
 	++groupid;
 	return true;
 }
@@ -64,4 +64,17 @@ Article Database::getArticle(unsigned int groupid, unsigned int articleid){
 		throw out_of_range("could not find article");
 	}
 	return newsgroups.at(groupid).getArticle(articleid);
+}
+
+bool Database::containsNewsgroup(unsigned int id){
+	return newsgroups.find(id)!=newsgroups.end();
+}
+
+bool Database::containsArticle(unsigned int groupid, unsigned int articleid){
+	try{
+		getArticle(groupid,articleid);
+	}catch(exception& e){
+		return false;
+	}
+	return true;
 }

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Newsgroup::Newsgroup(string name) : name(name){}
+Newsgroup::Newsgroup(string name, unsigned int id) : name(name), id(id){}
 
 bool Newsgroup::deleteArticle(int id){
 	auto it = articleList.begin();	
@@ -21,7 +21,11 @@ bool Newsgroup::deleteArticle(int id){
 	}
 }
 
-Article Newsgroup::getArticle(int id){
+unsigned int Newsgroup::getNumber()const{
+	return id;
+}
+
+Article Newsgroup::getArticle(int id) {
 	auto it = articleList.begin();
 	auto end = articleList.end();
 	Article a = Article("", "", "", id);
@@ -32,7 +36,7 @@ Article Newsgroup::getArticle(int id){
 	}
 }
 
-list<Article> Newsgroup::getAllArticles(){
+list<Article> Newsgroup::getAllArticles() const{
 	list<Article> temp;
 	for(Article a : articleList){
 		temp.push_back(a);
