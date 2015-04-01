@@ -18,6 +18,7 @@ public:
 	unsigned int getId() const;
 	bool operator!=(const Article& a) ;
 	bool operator==(const Article& a) ;
+	void print();
 	
 private: 
 	string author;
