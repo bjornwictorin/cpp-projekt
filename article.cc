@@ -29,3 +29,7 @@ bool Article::operator==(const Article& a){
 bool Article::operator!=(const Article& a){
 	return !(*this==a);
 }
+
+void Article::print(){
+	cout << "Author: " << author << endl << "Title: " << title<<  endl << text<<endl<<endl;
+}
