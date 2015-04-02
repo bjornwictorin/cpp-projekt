@@ -13,14 +13,21 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
+	cout<<"hej";
+#if 0
 	if (argc != 2) {
 		cerr << "Usage: myserver port-number" << endl;
 		exit(1);
 	}
+#endif
 	int port = -1;
+	
+	string in;
+	cin >> in;
+
 	try {
-		port = stoi(argv[1]);
+		port = stoi(in);
 	} catch (exception& e) {
 		cerr << "Wrong port number. " << e.what() << endl;
 		exit(1);
@@ -35,18 +42,24 @@ int main(int argc, char* argv[]){
 	MessageHandler handler(db);
 	
 	while (true) {
+		cout<<"before" << endl;
 		auto conn = server.waitForActivity();
+		cout<<"after" << endl;
 		if (conn != nullptr) {
+			cout<<"1";
 			try {
-				handler.handleEvent();
+				handler.handleEvent(conn);
 			} catch (ConnectionClosedException&) {
 				server.deregisterConnection(conn);
 				cout << "Client closed connection" << endl;
 			}
 		} else {
+			cout<<"2";
 			conn = make_shared<Connection>();
 			server.registerConnection(conn);
 			cout << "New client connects" << endl;
 		}
 	}
+
+	return EXIT_SUCCESS;
 }

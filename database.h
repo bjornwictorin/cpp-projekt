@@ -4,30 +4,32 @@
 #include<map>
 #include "newsgroup.h"
 #include "article.h"
+#include "databaseinterface.h"
 
 
 
 using namespace std;
 
 static unsigned int groupid = 0;
-class Database{
+class Database : public DatabaseInterface {
 	
 public:
-	Database();
-	list<Newsgroup> listNewsgroup() const;
-	bool createNewsgroup(string title);
-	bool deleteNewsgroup(unsigned int id);
-	list<Article> listArticlesInNewsgroup(unsigned int id) const;
-	bool createArticle(unsigned int id, string title, string author, string text);
-	bool deleteArticle(unsigned int groupid, unsigned int articleid);
-	Article getArticle(unsigned int groupid, unsigned int articleid);
-	bool containsNewsgroup(unsigned int id);
-	bool containsArticle(unsigned int groupid, unsigned int articleid);
+	Database() : DatabaseInterface(){}
+	virtual list<Newsgroup> listNewsgroup() const override;
+	virtual bool createNewsgroup(std::string& title) override;
+	virtual bool deleteNewsgroup(unsigned int id) override;
+	virtual list<Article> listArticlesInNewsgroup(unsigned int id) const override;
+	virtual bool createArticle(unsigned int id, std::string title, std::string author, std::string text) override;
+	virtual bool deleteArticle(unsigned int groupid, unsigned int articleid) override;
+	virtual Article getArticle(unsigned int groupid, unsigned int articleid) override;
+	virtual bool containsNewsgroup(unsigned int id) override;
+	virtual bool containsArticle(unsigned int groupid, unsigned int articleid) override;
 
 private:
 	map<unsigned int, Newsgroup> newsgroups;
 };
 
+/*
 int main(){
 	Database d;
 	
@@ -65,6 +67,7 @@ int main(){
 	cout<<"Test av get article"<<endl;
 	d.getArticle(2,10).print();
 }
+*/
 
 
 #endif
