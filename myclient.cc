@@ -6,21 +6,18 @@
 
 using namespace std;
 
-myClient::myClient(int argc, char* argv[]){
+myClient::myClient(int argc,const char* argv[]){
 	if(argc !=3){
 		cerr<< "Usage: Usage: myclient host-name port-number" << endl;
 		exit(1);
 	}
-	int a = 12;
-	char* s[]={"hello"};
-	Connection hej(s[1],a);
 	int portnumber = 0;
 	try{
 		portnumber = stoi(argv[2]);
 	}catch(exception& e){
 		cerr<< "Wrong port number"<<endl;
 	}
-	conn(argv[1], portnumber);
+	Connection conn(argv[1], portnumber);
 	if(!conn.isConnected()){
 		cerr<<"Connection attempt failed"<<endl;
 		exit(1);
@@ -171,7 +168,7 @@ void myClient::deleteNewsGroup(){
 	writeNumber(id);
 	conn.write(Protocol::COM_END);
 	
-	if(conn.read()!=Protocol::ANS_CREATE_NG){
+	if(conn.read()!=Protocol::ANS_DELETE_NG){
 		cerr<<"wrong answer from server"<<endl;
 		exit(1);
 	}
@@ -328,6 +325,10 @@ void myClient::getArticle(){
 	writeNumber(artid);
 	conn.write(Protocol::COM_END);
 	
+	if(conn.read()!=Protocol::ANS_GET_ART){
+		cerr<<"wrong answer from server"<<endl;
+		exit(1);
+	}
 	if(conn.read()==Protocol::ANS_ACK){
 		cout<<readString()<<readString()<<readString()<<endl;
 	}else if(conn.read()==Protocol::ERR_NG_DOES_NOT_EXIST){

@@ -9,7 +9,7 @@
 class myClient{
 	
 public: 
-	myClient(int argc, char* argv[]);
+	myClient(int argc, const char* argv[]);
 	void executeCommand(int command);
 	void printMenu() const;
 private:
