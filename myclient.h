@@ -9,7 +9,7 @@
 class myClient{
 	
 public: 
-	myClient(int argc, const char* argv[]);
+	myClient(int argc,  char* argv[]);
 	void executeCommand(int command);
 	void printMenu() const;
 private:
@@ -28,8 +28,9 @@ private:
 	
 };
 
+/*
 int main(){
 	std::cout<<"hej"<<std::endl;
 }
-
+*/
 #endif

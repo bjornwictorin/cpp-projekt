@@ -6,7 +6,7 @@
 
 using namespace std;
 
-myClient::myClient(int argc,const char* argv[]){
+myClient::myClient(int argc,  char* argv[]){
 	if(argc !=3){
 		cerr<< "Usage: Usage: myclient host-name port-number" << endl;
 		exit(1);
@@ -18,10 +18,12 @@ myClient::myClient(int argc,const char* argv[]){
 		cerr<< "Wrong port number"<<endl;
 	}
 	Connection conn(argv[1], portnumber);
-	if(!conn.isConnected()){
-		cerr<<"Connection attempt failed"<<endl;
+	cout<<"efter conn"<<endl;
+ 	if(!conn.isConnected()){
+  		cerr<<"Connection attempt failed"<<endl;
 		exit(1);
-	}
+ 	}
+ 
 	
 }
 
@@ -68,6 +70,7 @@ void myClient::printMenu() const{
 	cout<<"Press 5 to create an article"<<endl;
 	cout<<"Press 6 to delete an article"<<endl;
 	cout<<"Press 7 to get an article"<<endl;
+	cout<<"Press 8 to get exit"<<endl;
 }
 
 int myClient::readNumber(){
@@ -83,6 +86,7 @@ int myClient::readNumber(){
 }
 
 void myClient::writeNumber(int number){
+	conn.write(Protocol::PAR_NUM);
 	conn.write((number >> 24) & 0xFF);
 	conn.write((number >> 16) & 0xFF);
 	conn.write((number >> 8) & 0xFF);
@@ -102,7 +106,12 @@ string myClient::readString() {
 
 void myClient::writeString(string s) {
 	conn.write(Protocol::PAR_STRING);
-	writeNumber(s.size());
+	int number = s.size();
+	conn.write((number >> 24) & 0xFF);
+	conn.write((number >> 16) & 0xFF);
+	conn.write((number >> 8) & 0xFF);
+	conn.write(number & 0xFF);
+	//writeNumber(s.size());
 	for(char c : s){
 		conn.write(c);
 	}

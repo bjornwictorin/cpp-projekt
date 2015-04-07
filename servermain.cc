@@ -46,15 +46,17 @@ int main(int argc, char* argv[]) {
 		auto conn = server.waitForActivity();
 		cout<<"after" << endl;
 		if (conn != nullptr) {
-			cout<<"1";
+			cout<<"1"<<endl;
 			try {
 				handler.handleEvent(conn);
+				cout<<"3"<<endl;
 			} catch (ConnectionClosedException&) {
+				cout<<"4"<<endl;
 				server.deregisterConnection(conn);
 				cout << "Client closed connection" << endl;
 			}
 		} else {
-			cout<<"2";
+			cout<<"2"<<endl;
 			conn = make_shared<Connection>();
 			server.registerConnection(conn);
 			cout << "New client connects" << endl;

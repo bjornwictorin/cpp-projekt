@@ -32,6 +32,7 @@ MessageHandler::MessageHandler(DatabaseInterface& idb) : db(idb) {}
 	
 
 int MessageHandler::readInt(const shared_ptr<Connection>& conn) const{
+	conn->read();
 	unsigned char byte1 = conn->read();
 	unsigned char byte2 = conn->read();
 	unsigned char byte3 = conn->read();
@@ -41,9 +42,11 @@ int MessageHandler::readInt(const shared_ptr<Connection>& conn) const{
 
 string MessageHandler::readString(const shared_ptr<Connection>& conn) const{
 	int length = readInt(conn);
+	cout<<"length" << length<<endl;
 	string str;
 	char c;
 	for (int i = 0; i != length; ++i) {
+		cout<<i<<endl;
 		c = conn->read();
 		str += c;
 	}
@@ -60,19 +63,33 @@ void MessageHandler::writeInt(const shared_ptr<Connection>& conn, int n) const {
 
 void MessageHandler::writeString(const shared_ptr<Connection>& conn, string s) const {
 	conn->write(Protocol::PAR_STRING);
-	writeInt(conn, s.size());
+	int n = s.size();
+	conn->write(n >> 24);
+	conn->write(n >> 16);
+	conn->write(n >> 8);
+	conn->write(n);
 	for(char c : s){
 		conn->write(c);
 	}
 }
 
 void MessageHandler::handleEvent(const shared_ptr<Connection>& conn){
-	cout<<"inne i messagehandler";
-	switch (conn->read()){
+	cout<<"inne i messagehandler"<<endl;
+	if(conn->isConnected()){
+		cout<<"ansluten"<<endl;
+	}
+	conn->write('x');
+	cout<<"skriver x"<<endl;
+	int printMe;
+	printMe = conn->read();
+	cout<<"hej"<<endl;
+	cout << printMe << endl;
+	switch (printMe){
 		case Protocol::COM_LIST_NG:
 			listNG(conn);
 			break;
 		case Protocol::COM_CREATE_NG:
+			cout<<"6"<<endl;
 			createNG(conn);
 			break;
 		case Protocol::COM_DELETE_NG:
@@ -106,8 +123,10 @@ void MessageHandler::listNG(const shared_ptr<Connection>& conn) const{
 }
 
 void MessageHandler::createNG(const shared_ptr<Connection>& conn){
-	cout<< "inne i createNG";
+	cout<< "inne i createNG"<<endl;
 	string tmp = readString(conn);
+	cout<<"7"<<endl;
+
 	conn->read();
 	conn->write(Protocol::ANS_CREATE_NG);
 	if(db.createNewsgroup(tmp)){
@@ -140,6 +159,7 @@ void MessageHandler::listArt(const shared_ptr<Connection>& conn) const {
 	conn->write(Protocol::ANS_LIST_ART);
 	if(db.containsNewsgroup(id)) {
 		list<Article> articles = db.listArticlesInNewsgroup(id);
+		conn->write(Protocol::ANS_ACK);
 		writeInt(conn, articles.size());
 		for(Article& a : articles) {
 			writeInt(conn, a.getId());
