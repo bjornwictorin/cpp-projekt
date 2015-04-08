@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	cout<<"hej";
-#if 0
+#if 1
 	if (argc != 2) {
 		cerr << "Usage: myserver port-number" << endl;
 		exit(1);
@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
 #endif
 	int port = -1;
 	
-	string in;
-	cin >> in;
+	//string in;
+	//cin >> in;
 
 	try {
-		port = stoi(in);
+		port = stoi(argv[1]);
 	} catch (exception& e) {
 		cerr << "Wrong port number. " << e.what() << endl;
 		exit(1);

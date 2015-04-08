@@ -78,7 +78,7 @@ void MessageHandler::handleEvent(const shared_ptr<Connection>& conn){
 	if(conn->isConnected()){
 		cout<<"ansluten"<<endl;
 	}
-	conn->write('x');
+	//conn->write('x');
 	cout<<"skriver x"<<endl;
 	int printMe;
 	printMe = conn->read();

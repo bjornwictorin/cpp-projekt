@@ -64,7 +64,7 @@ Article Database::getArticle(unsigned int groupid, unsigned int articleid) {
 	if(newsgroups.find(groupid)==newsgroups.end()){
 		throw out_of_range("could not find article");
 	}
-	return newsgroups.at(groupid).getArticle((articleid));
+	return newsgroups.at(groupid).getArticle(articleid);
 }
 
 bool Database::containsNewsgroup(unsigned int id) {

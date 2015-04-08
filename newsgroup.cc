@@ -29,8 +29,10 @@ Article Newsgroup::getArticle(int id) {
 	auto it = articleList.begin();
 	auto end = articleList.end();
 	Article a = Article("", "", "", id);
-	if(find(it, end, a) != end){
-		return *it;
+	auto pos = find(it, end, a);
+	//if(find(it, end, a) != end){
+	if(pos != end) {
+		return *pos;
 	}else{
 		throw out_of_range("could not find article");
 	}

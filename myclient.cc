@@ -3,10 +3,15 @@
 #include "connection.h"
 #include <stdexcept>
 #include "connectionclosedexception.h"
+#include <memory>
+#include <string>
+#include <iostream>
+#include <limits>
 
 using namespace std;
+#if 0
+myClient::myClient(){
 
-myClient::myClient(int argc,  char* argv[]){
 	if(argc !=3){
 		cerr<< "Usage: Usage: myclient host-name port-number" << endl;
 		exit(1);
@@ -17,39 +22,38 @@ myClient::myClient(int argc,  char* argv[]){
 	}catch(exception& e){
 		cerr<< "Wrong port number"<<endl;
 	}
-	Connection conn(argv[1], portnumber);
+	conn(Connection(argv[1], portnumber));
 	cout<<"efter conn"<<endl;
  	if(!conn.isConnected()){
   		cerr<<"Connection attempt failed"<<endl;
 		exit(1);
  	}
- 
-	
-}
 
-void myClient::executeCommand(int command){
+}
+#endif
+void myClient::executeCommand(int command, const Connection& conn){
 	try{
 		switch(command){
 			case 1:
-				listNewsGroup();
+				listNewsGroup(conn);
 				break;
 			case 2:
-				createNewsGroup();
+				createNewsGroup(conn);
 				break;
 			case 3:
-				deleteNewsGroup();
+				deleteNewsGroup(conn);
 				break;
 			case 4:
-				listArticleInNewsGroup();
+				listArticleInNewsGroup(conn);
 				break;
 			case 5:
-				createArticle();
+				createArticle(conn);
 				break;
 			case 6:
-				deleteArticle();
+				deleteArticle(conn);
 				break;
 			case 7:
-				getArticle();
+				getArticle(conn);
 				break;
 			case 8:
 				exit(1);
@@ -73,7 +77,7 @@ void myClient::printMenu() const{
 	cout<<"Press 8 to get exit"<<endl;
 }
 
-int myClient::readNumber(){
+int myClient::readNumber(const Connection& conn){
 	if(conn.read()==Protocol::PAR_NUM){
 		unsigned char byte1 = conn.read();
 		unsigned char byte2 = conn.read();
@@ -81,11 +85,19 @@ int myClient::readNumber(){
 		unsigned char byte4 = conn.read();
 		return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
 	}	
-	cerr<<"wrong answer from server"<<endl;
+	cerr<<"wrong answer from server in readNumber"<<endl;
 		exit(1);
 }
 
-void myClient::writeNumber(int number){
+int myClient::readPureInt(const Connection& conn){
+	unsigned char byte1 = conn.read();
+	unsigned char byte2 = conn.read();
+	unsigned char byte3 = conn.read();
+	unsigned char byte4 = conn.read();
+	return (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
+}
+
+void myClient::writeNumber(int number, const Connection& conn){
 	conn.write(Protocol::PAR_NUM);
 	conn.write((number >> 24) & 0xFF);
 	conn.write((number >> 16) & 0xFF);
@@ -94,17 +106,23 @@ void myClient::writeNumber(int number){
 	
 }
 
-string myClient::readString() {
-	int length = readNumber();
-	string str;
-	for (int i = 0; i != length; ++i) {
-		str += conn.read();
+string myClient::readString(const Connection& conn) {
+	if(conn.read() == Protocol::PAR_STRING){
+		int length = readPureInt(conn);
+		string str;
+		for (int i = 0; i != length; ++i) {
+			str += conn.read();
+		}
+		return str;
 	}
-	return str;
+	else{
+		cerr<<"wrong answer from server in readString"<<endl;
+		exit(1);
+	}
 }
 
 
-void myClient::writeString(string s) {
+void myClient::writeString(string s, const Connection& conn) {
 	conn.write(Protocol::PAR_STRING);
 	int number = s.size();
 	conn.write((number >> 24) & 0xFF);
@@ -117,51 +135,55 @@ void myClient::writeString(string s) {
 	}
 }
 
-void myClient::listNewsGroup(){
+void myClient::listNewsGroup(const Connection& conn){
 	conn.write(Protocol::COM_LIST_NG);
 	conn.write(Protocol::COM_END);
 	if(conn.read()!=Protocol::ANS_LIST_NG){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in listNG"<<endl;
 		exit(1);
 	}
-	for(int i = 0;i<readNumber();++i){
-		cout<< readNumber() << " "<<readString()<<endl;
+	int temp = readNumber(conn);
+	cout<<temp<<endl;
+	for(int i = 0;i != temp; ++i){
+		cout<< readNumber(conn) <<" ";
+		cout<< readString(conn) <<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in listNG"<<endl;
 		exit(1);
 	}
 
 	
 }
-void myClient::createNewsGroup(){
+void myClient::createNewsGroup(const Connection& conn){
 	cout<<"Type in name of newsgroup"<<endl;
 	string s;
 	cin>>s;
 	conn.write(Protocol::COM_CREATE_NG);
-	writeString(s);
+	writeString(s, conn);
 	conn.write(Protocol::COM_END);
 	
 	if(conn.read()!=Protocol::ANS_CREATE_NG){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in createNG"<<endl;
 		exit(1);
 	}
-	if(conn.read()==Protocol::ANS_ACK){
+	int temp = conn.read();
+	if(temp==Protocol::ANS_ACK){
 		cout<<"Group created"<<endl;
 	}
-	if(conn.read()!=Protocol::ERR_NG_ALREADY_EXISTS){
+	else if(temp==Protocol::ERR_NG_ALREADY_EXISTS){
 		cout<<"Failed to create group, group already exists"<<endl;
 	}else{
 		cout<<"Unknown error"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in createNG"<<endl;
 		exit(1);
 	}
 	
 }
 
-void myClient::deleteNewsGroup(){
+void myClient::deleteNewsGroup(const Connection& conn){
 	cout<<"Type in id of newsgroup"<<endl;
 	string s;
 	cin>>s;
@@ -174,11 +196,11 @@ void myClient::deleteNewsGroup(){
 	}
 	
 	conn.write(Protocol::COM_DELETE_NG);
-	writeNumber(id);
+	writeNumber(id, conn);
 	conn.write(Protocol::COM_END);
 	
 	if(conn.read()!=Protocol::ANS_DELETE_NG){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in deleteNG1"<<endl;
 		exit(1);
 	}
 	if(conn.read()==Protocol::ANS_ACK){
@@ -189,12 +211,12 @@ void myClient::deleteNewsGroup(){
 		cout<<"Unknown error"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in deleteNG2"<<endl;
 		exit(1);
 	}
 }
 
-void myClient::listArticleInNewsGroup(){
+void myClient::listArticleInNewsGroup(const Connection& conn){
 	cout<<"Type in id of newsgroup"<<endl;
 	string s;
 	cin>>s;
@@ -206,30 +228,32 @@ void myClient::listArticleInNewsGroup(){
 		return;
 	}
 	conn.write(Protocol::COM_LIST_ART);
-	writeNumber(id);
+	writeNumber(id, conn);
 	conn.write(Protocol::COM_END);
 	if(conn.read()!=Protocol::ANS_LIST_ART){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in listArt1"<<endl;
 		exit(1);
 	}
 	if(conn.read()==Protocol::ANS_ACK){
-		for(int i = 0;i<readNumber();++i){
-			cout<< readNumber() << " "<<readString()<<endl;
+		int temp = readNumber(conn);
+		for(int i = 0;i!=temp;++i){
+			cout<< readNumber(conn) << " ";
+			cout<<readString(conn)<<endl;
 		}
 	} else if(conn.read()!=Protocol::ERR_NG_DOES_NOT_EXIST){
 		cout<<"Failed to find group, group does not exists"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in listArt2"<<endl;
 		exit(1);
 	}
 	
 }
 
-void myClient::createArticle(){
+void myClient::createArticle(const Connection& conn){
 	cout<<"Type in id of newsgroup"<<endl;
 	string s;
-	cin>>s;
+	cin >> s;
 	int id = 0;
 	try{
 		id = stoi(s);
@@ -239,22 +263,27 @@ void myClient::createArticle(){
 	}
 	cout<<"Type in title"<<endl;
 	string title;
-	cin>>title;
+	//cin >> title;
+	cin.ignore ( std::numeric_limits<std::streamsize>::max(), '\n' );
+	getline(cin, title);
+	//getline används för att texten ska kunna läsas in med mellanslag
 	cout<<"Type in author"<<endl;
 	string author;
-	cin>>author;
+	getline(cin, author);
+	//cin>>author;
 	cout<<"Type in text"<<endl;
 	string text;
-	cin>>text;
+	getline(cin, text);
+	//cin>>text;
 	conn.write(Protocol::COM_CREATE_ART);
-	writeNumber(id);
-	writeString(title);
-	writeString(author);
-	writeString(text);
+	writeNumber(id, conn);
+	writeString(title, conn);
+	writeString(author, conn);
+	writeString(text, conn);
 	conn.write(Protocol::COM_END);
 	
 	if(conn.read()!=Protocol::ANS_CREATE_ART){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in createArt1"<<endl;
 		exit(1);
 	}
 	if(conn.read()==Protocol::ANS_ACK){
@@ -263,11 +292,11 @@ void myClient::createArticle(){
 		cout<<"Failed to find group, group does not exists"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in createArt2"<<endl;
 		exit(1);
 	}
 }
-void myClient::deleteArticle(){
+void myClient::deleteArticle(const Connection& conn){
 	cout<<"Type in id of newsgroup"<<endl;
 	string s;
 	cin>>s;
@@ -288,12 +317,12 @@ void myClient::deleteArticle(){
 		return;
 	}
 	conn.write(Protocol::COM_DELETE_ART);
-	writeNumber(ngid);
-	writeNumber(artid);
+	writeNumber(ngid, conn);
+	writeNumber(artid, conn);
 	conn.write(Protocol::COM_END);
 	
 	if(conn.read()!=Protocol::ANS_DELETE_ART){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in createArt3"<<endl;
 		exit(1);
 	}
 	if(conn.read()==Protocol::ANS_ACK){
@@ -309,7 +338,7 @@ void myClient::deleteArticle(){
 	}
 	
 }
-void myClient::getArticle(){
+void myClient::getArticle(const Connection& conn){
 	cout<<"Type in id of newsgroup"<<endl;
 	string s;
 	cin>>s;
@@ -330,23 +359,25 @@ void myClient::getArticle(){
 		return;
 	}
 	conn.write(Protocol::COM_GET_ART);
-	writeNumber(ngid);
-	writeNumber(artid);
+	writeNumber(ngid, conn);
+	writeNumber(artid, conn);
 	conn.write(Protocol::COM_END);
 	
 	if(conn.read()!=Protocol::ANS_GET_ART){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in getArt1"<<endl;
 		exit(1);
 	}
 	if(conn.read()==Protocol::ANS_ACK){
-		cout<<readString()<<readString()<<readString()<<endl;
+		cout<<"Title: "<<readString(conn)<<endl;
+		cout<<"Author: "<<readString(conn)<<endl;
+		cout<<"Text: "<<readString(conn)<<endl;
 	}else if(conn.read()==Protocol::ERR_NG_DOES_NOT_EXIST){
 		cout<<"Could not find newsgroup"<<endl;
 	}else{
 		cout<<"Could not find article"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
-		cerr<<"wrong answer from server"<<endl;
+		cerr<<"wrong answer from server in getArt2"<<endl;
 		exit(1);
 	}
 }

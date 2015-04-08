@@ -4,27 +4,28 @@
 #include "connection.h"
 #include<string>
 #include<iostream>
+#include <memory>
 
 
 class myClient{
 	
 public: 
-	myClient(int argc,  char* argv[]);
-	void executeCommand(int command);
+	//myClient();
+	void executeCommand(int command, const Connection& conn);
 	void printMenu() const;
 private:
-	Connection conn;
-	int readNumber();
-	void writeNumber(int number);
-	std::string readString();
-	void writeString(std::string s);
-	void listNewsGroup();
-	void createNewsGroup();
-	void deleteNewsGroup();
-	void listArticleInNewsGroup();
-	void createArticle();
-	void deleteArticle();
-	void getArticle();
+	int readNumber(const Connection& conn);
+	int readPureInt(const Connection& conn);
+	void writeNumber(int number, const Connection& conn);
+	std::string readString(const Connection& conn);
+	void writeString(std::string s, const Connection& conn);
+	void listNewsGroup(const Connection& conn);
+	void createNewsGroup(const Connection& conn);
+	void deleteNewsGroup(const Connection& conn);
+	void listArticleInNewsGroup(const Connection& conn);
+	void createArticle(const Connection& conn);
+	void deleteArticle(const Connection& conn);
+	void getArticle(const Connection& conn);
 	
 };
 
