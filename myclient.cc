@@ -9,28 +9,7 @@
 #include <limits>
 
 using namespace std;
-#if 0
-myClient::myClient(){
 
-	if(argc !=3){
-		cerr<< "Usage: Usage: myclient host-name port-number" << endl;
-		exit(1);
-	}
-	int portnumber = 0;
-	try{
-		portnumber = stoi(argv[2]);
-	}catch(exception& e){
-		cerr<< "Wrong port number"<<endl;
-	}
-	conn(Connection(argv[1], portnumber));
-	cout<<"efter conn"<<endl;
- 	if(!conn.isConnected()){
-  		cerr<<"Connection attempt failed"<<endl;
-		exit(1);
- 	}
-
-}
-#endif
 void myClient::executeCommand(int command, const Connection& conn){
 	try{
 		switch(command){
@@ -58,6 +37,8 @@ void myClient::executeCommand(int command, const Connection& conn){
 			case 8:
 				exit(1);
 				break;
+			default:
+				cout<<"Only numbers between 1-8 are allowed"<<endl;
 		}
 		
 		
@@ -129,7 +110,6 @@ void myClient::writeString(string s, const Connection& conn) {
 	conn.write((number >> 16) & 0xFF);
 	conn.write((number >> 8) & 0xFF);
 	conn.write(number & 0xFF);
-	//writeNumber(s.size());
 	for(char c : s){
 		conn.write(c);
 	}
@@ -171,14 +151,16 @@ void myClient::createNewsGroup(const Connection& conn){
 	if(temp==Protocol::ANS_ACK){
 		cout<<"Group created"<<endl;
 	}
-	else if(temp==Protocol::ERR_NG_ALREADY_EXISTS){
+	else if(temp==Protocol::ANS_NAK){
+		if(conn.read()==Protocol::ERR_NG_ALREADY_EXISTS){
 		cout<<"Failed to create group, group already exists"<<endl;
-	}else{
+		}else{
 		cout<<"Unknown error"<<endl;
+		exit(1);
+		}
 	}
 	if(conn.read()!=Protocol::ANS_END){
 		cerr<<"wrong answer from server in createNG"<<endl;
-		exit(1);
 	}
 	
 }
@@ -205,7 +187,7 @@ void myClient::deleteNewsGroup(const Connection& conn){
 	}
 	if(conn.read()==Protocol::ANS_ACK){
 		cout<<"Group deleted"<<endl;
-	}else if(conn.read()!=Protocol::ERR_NG_DOES_NOT_EXIST){
+	}else if(conn.read()==Protocol::ERR_NG_DOES_NOT_EXIST){
 		cout<<"Failed to delete group, group does not exists"<<endl;
 	}else{
 		cout<<"Unknown error"<<endl;
@@ -240,7 +222,7 @@ void myClient::listArticleInNewsGroup(const Connection& conn){
 			cout<< readNumber(conn) << " ";
 			cout<<readString(conn)<<endl;
 		}
-	} else if(conn.read()!=Protocol::ERR_NG_DOES_NOT_EXIST){
+	} else if(conn.read()==Protocol::ERR_NG_DOES_NOT_EXIST){
 		cout<<"Failed to find group, group does not exists"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){
@@ -263,18 +245,15 @@ void myClient::createArticle(const Connection& conn){
 	}
 	cout<<"Type in title"<<endl;
 	string title;
-	//cin >> title;
 	cin.ignore ( std::numeric_limits<std::streamsize>::max(), '\n' );
 	getline(cin, title);
 	//getline används för att texten ska kunna läsas in med mellanslag
 	cout<<"Type in author"<<endl;
 	string author;
 	getline(cin, author);
-	//cin>>author;
 	cout<<"Type in text"<<endl;
 	string text;
 	getline(cin, text);
-	//cin>>text;
 	conn.write(Protocol::COM_CREATE_ART);
 	writeNumber(id, conn);
 	writeString(title, conn);
@@ -288,7 +267,7 @@ void myClient::createArticle(const Connection& conn){
 	}
 	if(conn.read()==Protocol::ANS_ACK){
 		cout<<"Article created"<<endl;
-	}else if(conn.read()!=Protocol::ERR_NG_DOES_NOT_EXIST){
+	}else if(conn.read()==Protocol::ERR_NG_DOES_NOT_EXIST){
 		cout<<"Failed to find group, group does not exists"<<endl;
 	}
 	if(conn.read()!=Protocol::ANS_END){

@@ -6,11 +6,14 @@
 #include<iostream>
 #include <memory>
 
+/*
+*The class for the client
+*/
+
 
 class myClient{
 	
 public: 
-	//myClient();
 	void executeCommand(int command, const Connection& conn);
 	void printMenu() const;
 private:
@@ -29,9 +32,4 @@ private:
 	
 };
 
-/*
-int main(){
-	std::cout<<"hej"<<std::endl;
-}
-*/
 #endif

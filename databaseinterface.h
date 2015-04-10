@@ -3,6 +3,11 @@
 #include "article.h"
 #include "newsgroup.h"
 
+/*
+*An interface for the two diffrent databases
+*/
+
+
 class DatabaseInterface{
 	
 public:
