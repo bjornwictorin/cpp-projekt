@@ -46,9 +46,8 @@ list<Article> Newsgroup::getAllArticles() const{
 	return temp;
 }
 
-bool Newsgroup::createArticle(string author, string title, string text){
-	articleList.push_back(Article(author, title, text, uniqueid));
-	++uniqueid;
+bool Newsgroup::createArticle(string author, string title, string text, unsigned int artid){
+	articleList.push_back(Article(author, title, text, artid));
 	++count;
 	return true;
 }

@@ -18,7 +18,8 @@ CXXFLAGS += -g
 #CXXFLAGS += -stdlib=libc++
 
 #all: libclientserver.a article message_handler
-all: servermain mainprogram
+all: servermain mainprogram diskservermain
+#all: diskmain 
 
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
@@ -29,6 +30,9 @@ all: servermain mainprogram
 
 servermain: message_handler.o server.o servermain.o database.o newsgroup.o article.o connection.o
 mainprogram: mainprogram.o myclient.o connection.o
+diskservermain: message_handler.o server.o diskdatabase.o newsgroup.o article.o connection.o diskservermain.o
+
+
 
 # Phony targets
 .PHONY: all clean

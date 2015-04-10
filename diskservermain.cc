@@ -3,7 +3,7 @@
 #include "connection.h"
 #include "connectionclosedexception.h"
 #include "databaseinterface.h"
-#include "database.h"
+//#include "database.h"
 #include "diskdatabase.h"
 #include "message_handler.h"
 #include <memory>
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	
-	Database db;
+	DiskDatabase db;
 	MessageHandler handler(db);
 	
 	while (true) {

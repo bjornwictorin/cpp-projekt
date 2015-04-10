@@ -2,6 +2,8 @@
 #define DATABASE_H
 #include<string>
 #include<map>
+#include <sys/stat.h>
+#include <dirent.h>
 #include "newsgroup.h"
 #include "article.h"
 #include "databaseinterface.h"
@@ -11,10 +13,10 @@
 using namespace std;
 
 static unsigned int groupid = 0;
-class Diskdatabase : public DatabaseInterface {
+class DiskDatabase : public DatabaseInterface {
 	
 public:
-	Diskdatabase();
+	DiskDatabase();
 	virtual list<Newsgroup> listNewsgroup() const override;
 	virtual bool createNewsgroup(std::string& title) override;
 	virtual bool deleteNewsgroup(unsigned int id) override;
@@ -26,48 +28,10 @@ public:
 	virtual bool containsArticle(unsigned int groupid, unsigned int articleid) override;
 
 private:
+	string ngs = "ngs";
 	map<unsigned int, Newsgroup> newsgroups;
+	void createNewsgroupDisk(dirent*& dirp);
+	unsigned int artid = 0;
 };
-
-/*
-int main(){
-	Diskdatabase d;
-	
-	d.createNewsgroup("E-sport");
-	d.createNewsgroup("Sport");
-	cout<<"Test av create NG"<<endl;
-	for(auto a : d.listNewsgroup()){
-	cout<<a.getName()<<endl;	
-	}
-	
-	cout<<endl;
-	cout<<"Test av delete NG"<<endl;
-	d.createNewsgroup("nyheter");
-	d.deleteNewsgroup(1);
-	for(auto a : d.listNewsgroup()){
-	cout<<a.getName()<<endl;	
-	}
-	
-	cout<<endl;
-	cout<<"Test av create article"<<endl;
-	d.createArticle(2, "Hej", "marc", "text");
-	d.createArticle(2, "Hej", "tom", "text");
-	d.createArticle(0, "Hej", "marc", "text");
-	for(auto a : d.listArticlesInNewsgroup(2)){
-		a.print();
-	}
-	
-	cout<<endl;
-	cout<<"Test av delete article"<<endl;
-	d.deleteArticle(2, 10);
-	for(auto a : d.listArticlesInNewsgroup(2)){
-		a.print();
-	}
-	cout<<endl;
-	cout<<"Test av get article"<<endl;
-	d.getArticle(2,10).print();
-}
-*/
-
 
 #endif

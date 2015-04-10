@@ -11,10 +11,10 @@
 using namespace std;
 
 static unsigned int groupid = 0;
-class Database : public DatabaseInterface {
+class Diskdatabase : public DatabaseInterface {
 	
 public:
-	Database() : DatabaseInterface(){}
+	Diskdatabase();
 	virtual list<Newsgroup> listNewsgroup() const override;
 	virtual bool createNewsgroup(std::string& title) override;
 	virtual bool deleteNewsgroup(unsigned int id) override;
@@ -27,12 +27,11 @@ public:
 
 private:
 	map<unsigned int, Newsgroup> newsgroups;
-	unsigned int artid = 0;
 };
 
 /*
 int main(){
-	Database d;
+	Diskdatabase d;
 	
 	d.createNewsgroup("E-sport");
 	d.createNewsgroup("Sport");

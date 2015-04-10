@@ -5,14 +5,14 @@
 #include <list>
 #include "article.h"
 
-static unsigned int uniqueid = 0;
+//static unsigned int uniqueid = 0;
 class Newsgroup{
 public:
 	Newsgroup(string name, unsigned int id);
 	bool deleteArticle(int id);
 	Article getArticle(int id);
 	std::list<Article> getAllArticles() const;
-	bool createArticle(std::string author, std::string title, std::string text);
+	bool createArticle(std::string author, std::string title, std::string text, unsigned int artid);
 	void printAll();
 	std::string getName();
 	unsigned int getNumber() const;

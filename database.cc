@@ -47,7 +47,7 @@ list<Article> Database::listArticlesInNewsgroup(unsigned int id) const {
 
 bool Database::createArticle(unsigned int id, string title, string author, string text) {
 	if(newsgroups.find(id)!=newsgroups.end()){
-		return newsgroups.at(id).createArticle(author, title, text);
+		return newsgroups.at(id).createArticle(author, title, text, artid++);
 	}else{
 		return false;
 	}

@@ -1,102 +1,115 @@
-#include <map>
-#include <string>
-#include <list>
-#include <exception>
+#include<map>
+#include<string>
+#include<list>
+#include<exception>
 #include <algorithm>
-#include <iostream>
-#include <fstream>
 #include <dirent.h>
+#include <memory>
 #include "newsgroup.h"
 #include "article.h"
 #include "databaseinterface.h"
 #include "diskdatabase.h"
+#include <iostream>
+#include <sys/stat.h>
+#include <fstream>
+#include <cstring>
+#include <cstdlib>
 
 
 using namespace std;
 
-// Filling newsgroups
-Diskdatabase::Diskdatabase() : DatabaseInterface(){
-	DIR *pDIR;
-	struct dirent *entry;
-	if( pDIR=opendir("/data") ){
-		while(entry = readdir(pDIR)){
-			if( strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 ){
-			
-				// Finding the location of "-" then creating substrings
-				// to and from it and adding to pairs.
-				size_t pos = str.find("-");	
-				string id = entry->d_name.substr(0, pos);
-				string name = entry->d_name.substr(pos+1);
-				Newsgroup n(name, id);
-
-				newsgroups.insert(make_pair(id, Newsgroup(name, id)));
-				++groupid;
-			}
-			closedir(pDIR);
-		}
+DiskDatabase::DiskDatabase() : DatabaseInterface(), newsgroups() {
+	DIR* dp;
+	struct dirent *dirp;
+	//create folder if it does not already exist
+	
+	if((dp = opendir(ngs.c_str())) == nullptr){
+		mkdir(ngs.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		cout<<"Ny mapp skapades"<<endl;
 	}
-	for(auto& kv : newsgroups){
-		if(pDIR=opendir("/data/" + kv.first + "-" + kv.second.getName())){
-			while(entry = readdir(pDIR)){
-				filename = entry->d_name;
-				ifstream infile(filename);
-				string author;
-				string title;
-				string text;
-				char c;
-				
-// HÄR BEHÖVER INFILE PLOCKA UT RESPEKTIVE INFO FÖR AUTHOR, TITLE OCH TEXT				
-				
-				while(infile.get
-				n.createArticle(author, title, text);
+	else {
+		
+		while((dirp = readdir(dp)) != nullptr){
+			if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, "..")){
+				createNewsgroupDisk(dirp);
 			}
 		}
 	}
+	closedir(dp);
+	
 }
 
+void DiskDatabase::createNewsgroupDisk(dirent*& dirp){
+		string filename = string(dirp->d_name);
+		string title = filename.substr(0, filename.find("-"));
+		cout<<"  "+filename<<endl;
+		string idnr = filename.substr(title.length()+1);
+		cout<<title<<endl;
+		int grid = stoi(idnr);
+		if(grid>=groupid){
+			groupid=grid+1;
+		}
+		newsgroups.insert(make_pair(groupid, Newsgroup(title, grid)));
+		DIR* dp;
+		if ((dp = opendir(filename.c_str())) != nullptr) {
+		
+			while(((dirp = readdir(dp)) != nullptr)) {
+				if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, "..")){
+					ifstream text(dirp->d_name);
+					if(text.is_open()){
+						size_t s1 = filename.find("-");
+						size_t s2 = filename.rfind("-");
+						string artTitle = filename.substr(0, s1);
+						string artId = filename.substr(s1+1, s2);
+						string author = filename.substr(s2+1);
+						string artText;
+						char c;
+						while(text >> c) {
+							artText += c;
+						}
+						int ID = stoi(artId);
+						if(ID>=artid){
+							artid=ID+1;
+						}
+						text.close();
+						newsgroups.at(grid).createArticle(author, artTitle, artText, ID);
+					}
+				}
+			}
+			closedir(dp);
+		}else{
+			cout<<"fel"<<endl;
+		}
+	}
 
-
-// The same as original database.cc
-list<Newsgroup> Diskdatabase::listNewsgroup() const {
-
+list<Newsgroup> DiskDatabase::listNewsgroup() const {
 	list<Newsgroup> temp;
 	for(auto& kv : newsgroups){
 		temp.push_back(kv.second);
 	}
-
 	return temp;
 }
 
-
-// Checks if newsgroup exists. If not, adding to Map and Directory.
-bool Diskdatabase::createNewsgroup(string& title) {
+bool DiskDatabase::createNewsgroup(string& title) {
 	for(auto& kv : newsgroups){
 		if(kv.second.getName() == title){
 			return false;
 		}
 	}
-	
 	newsgroups.insert(make_pair(groupid, Newsgroup(title, groupid)));
-	int added = mkdir("/data/" + groupid + "-" + title);
+	string temp = ngs + "/" + title + "-" + to_string((groupid));
+	mkdir(temp.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	++groupid;
-	
-	return added == 0;
+	return true;
 }
 
-
-// Removes newsgroup from Map and Directory. rmdir returns 0 on success.
-bool Diskdatabase::deleteNewsgroup(unsigned int id) {
+bool DiskDatabase::deleteNewsgroup(unsigned int id) {
 	unsigned int temp = newsgroups.size();
-	
-	int removed = rmdir(newsgroups.at(id).first + "-" + newsgroups.at(id).second.getName());
 	newsgroups.erase(id);
-	
-	return newsgroups.size()!=temp && removed == 0;
+	return newsgroups.size()!=temp;
 }
 
-
-// Same as before.
-list<Article> Diskdatabase::listArticlesInNewsgroup(unsigned int id) const {
+list<Article> DiskDatabase::listArticlesInNewsgroup(unsigned int id) const {
 	if(newsgroups.find(id)!=newsgroups.end()){
 		return newsgroups.at(id).getAllArticles();
 	}
@@ -104,48 +117,33 @@ list<Article> Diskdatabase::listArticlesInNewsgroup(unsigned int id) const {
 	return temp;
 }
 
-
-bool Diskdatabase::createArticle(unsigned int id, string title, string author, string text) {
+bool DiskDatabase::createArticle(unsigned int id, string title, string author, string text) {
 	if(newsgroups.find(id)!=newsgroups.end()){
-	
-// HÄR BEHÖVER VI SKRIVA INFO TILL EN FIL MED ADRESS /data/ngid-ngname/articleid.txt
-// LÄGG TILL EN SUCCESS CHECK TILL RETURN.
-		return newsgroups.at(id).createArticle(author, title, text);
+		return newsgroups.at(id).createArticle(author, title, text, artid);
 	}else{
 		return false;
 	}
 	
 }
 
-
-// Removes article from newsgroup. remove returns 0 on success.
-bool Diskdatabase::deleteArticle(unsigned int groupid, unsigned int articleid) {
+bool DiskDatabase::deleteArticle(unsigned int groupid, unsigned int articleid) {
 	if(newsgroups.find(groupid)==newsgroups.end()){
 		return false;
 	}
-	
-	int removed = remove("/data/" + newsgroups.at(groupid).first + "-" + newsgroups.at(groupid).second.getName() + "/" + articleid + ".txt");
-	return newsgroups.at(groupid).deleteArticle(articleid) && removed == 0;
+	return newsgroups.at(groupid).deleteArticle(articleid);
 }
-
-
-// Same as before.
-Article Diskdatabase::getArticle(unsigned int groupid, unsigned int articleid) {
+Article DiskDatabase::getArticle(unsigned int groupid, unsigned int articleid) {
 	if(newsgroups.find(groupid)==newsgroups.end()){
 		throw out_of_range("could not find article");
 	}
 	return newsgroups.at(groupid).getArticle(articleid);
 }
 
-
-// Same as before.
-bool Diskdatabase::containsNewsgroup(unsigned int id) {
+bool DiskDatabase::containsNewsgroup(unsigned int id) {
 	return newsgroups.find(id)!=newsgroups.end();
 }
 
-
-// Same as before.
-bool Diskdatabase::containsArticle(unsigned int groupid, unsigned int articleid) {
+bool DiskDatabase::containsArticle(unsigned int groupid, unsigned int articleid) {
 	try{
 		getArticle(groupid,articleid);
 	}catch(exception& e){
