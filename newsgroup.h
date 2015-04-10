@@ -4,6 +4,10 @@
 #include <string>
 #include <list>
 #include "article.h"
+/*
+*Class that describes a newsgroup containing diffrent articles
+*/
+
 
 //static unsigned int uniqueid = 0;
 class Newsgroup{
@@ -22,17 +26,5 @@ private:
 	std::string name;
 	unsigned int id;
 };
-/*
-int main(){
-	Newsgroup n("Test");
-	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
-	n.createArticle("marc", "HeHE", "Folk i källaren");
-	n.createArticle("Tom", "HeHE", "Folk kodar i källaren");
-	n.deleteArticle(0);
-	n.printAll();
-	cout<<n.getName()<<endl;
-	for(auto a : n.getAllArticles()){
-	a.print();
-	}
-}*/
+
 #endif

@@ -30,7 +30,6 @@ Article Newsgroup::getArticle(int id) {
 	auto end = articleList.end();
 	Article a = Article("", "", "", id);
 	auto pos = find(it, end, a);
-	//if(find(it, end, a) != end){
 	if(pos != end) {
 		return *pos;
 	}else{

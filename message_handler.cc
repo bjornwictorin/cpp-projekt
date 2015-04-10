@@ -32,7 +32,10 @@ MessageHandler::MessageHandler(DatabaseInterface& idb) : db(idb) {}
 	
 
 int MessageHandler::readInt(const shared_ptr<Connection>& conn) const{
-	conn->read();
+	if(conn->read()!=Protocol::PAR_NUM){
+			cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+		}
 	unsigned char byte1 = conn->read();
 	unsigned char byte2 = conn->read();
 	unsigned char byte3 = conn->read();
@@ -41,12 +44,18 @@ int MessageHandler::readInt(const shared_ptr<Connection>& conn) const{
 }
 
 string MessageHandler::readString(const shared_ptr<Connection>& conn) const{
-	int length = readInt(conn);
-	cout<<"length" << length<<endl;
+	if(conn->read()!=Protocol::PAR_STRING){
+			cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+		}
+	unsigned char byte1 = conn->read();
+	unsigned char byte2 = conn->read();
+	unsigned char byte3 = conn->read();
+	unsigned char byte4 = conn->read();
+	int length = (byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4;
 	string str;
 	char c;
 	for (int i = 0; i != length; ++i) {
-		cout<<i<<endl;
 		c = conn->read();
 		str += c;
 	}
@@ -74,22 +83,12 @@ void MessageHandler::writeString(const shared_ptr<Connection>& conn, string s) c
 }
 
 void MessageHandler::handleEvent(const shared_ptr<Connection>& conn){
-	cout<<"inne i messagehandler"<<endl;
-	if(conn->isConnected()){
-		cout<<"ansluten"<<endl;
-	}
-	//conn->write('x');
-	cout<<"skriver x"<<endl;
-	int printMe;
-	printMe = conn->read();
-	cout<<"hej"<<endl;
-	cout << printMe << endl;
+	int printMe = conn->read();
 	switch (printMe){
 		case Protocol::COM_LIST_NG:
 			listNG(conn);
 			break;
 		case Protocol::COM_CREATE_NG:
-			cout<<"6"<<endl;
 			createNG(conn);
 			break;
 		case Protocol::COM_DELETE_NG:
@@ -107,11 +106,17 @@ void MessageHandler::handleEvent(const shared_ptr<Connection>& conn){
 		case Protocol::COM_GET_ART:
 			getArt(conn);
 			break;
+		default: 
+			cout<<"Undefined command from connection"<<endl;
+			conn->~Connection();
 	}
 }
 
 void MessageHandler::listNG(const shared_ptr<Connection>& conn) const{
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_LIST_NG);
 	list<Newsgroup> newsgroups = db.listNewsgroup();
 	writeInt(conn, newsgroups.size());
@@ -123,11 +128,11 @@ void MessageHandler::listNG(const shared_ptr<Connection>& conn) const{
 }
 
 void MessageHandler::createNG(const shared_ptr<Connection>& conn){
-	cout<< "inne i createNG"<<endl;
 	string tmp = readString(conn);
-	cout<<"7"<<endl;
-
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_CREATE_NG);
 	if(db.createNewsgroup(tmp)){
 		conn->write(Protocol::ANS_ACK);
@@ -141,7 +146,10 @@ void MessageHandler::createNG(const shared_ptr<Connection>& conn){
 
 void MessageHandler::deleteNG(const shared_ptr<Connection>& conn){
 	int id = readInt(conn);
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_DELETE_NG);
 	if(db.deleteNewsgroup(id)){
 		conn->write(Protocol::ANS_ACK);
@@ -155,7 +163,10 @@ void MessageHandler::deleteNG(const shared_ptr<Connection>& conn){
 
 void MessageHandler::listArt(const shared_ptr<Connection>& conn) const {
 	int id = readInt(conn);
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_LIST_ART);
 	if(db.containsNewsgroup(id)) {
 		list<Article> articles = db.listArticlesInNewsgroup(id);
@@ -178,7 +189,10 @@ void MessageHandler::createArt(const shared_ptr<Connection>& conn) const {
 	string title = readString(conn);
 	string author = readString(conn);
 	string text = readString(conn);
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_CREATE_ART);
 	if(db.createArticle(id, title, author, text)){
 		conn->write(Protocol::ANS_ACK);
@@ -193,7 +207,10 @@ void MessageHandler::createArt(const shared_ptr<Connection>& conn) const {
 void MessageHandler::deleteArt(const shared_ptr<Connection>& conn) const {
 	int ng = readInt(conn);
 	int art = readInt(conn);
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_DELETE_ART);
 	if(db.deleteArticle(ng, art)){
 		conn->write(Protocol::ANS_ACK);
@@ -213,7 +230,10 @@ void MessageHandler::deleteArt(const shared_ptr<Connection>& conn) const {
 void MessageHandler::getArt(const shared_ptr<Connection>& conn) const {
 	int ng = readInt(conn);
 	int art = readInt(conn);
-	conn->read();
+	if(conn->read()!=Protocol::COM_END){
+		cout<<"Wrong command from connection"<<endl;
+			conn->~Connection();
+	}
 	conn->write(Protocol::ANS_GET_ART);
 	if(db.containsArticle(ng, art)){
 		Article a = db.getArticle(ng, art);

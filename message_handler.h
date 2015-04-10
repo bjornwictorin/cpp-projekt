@@ -6,6 +6,10 @@
 #include <memory>
 #include <string>
 
+/*
+*Class handling the commands from the server and containing the database
+*/
+
 
 class MessageHandler {
 public:

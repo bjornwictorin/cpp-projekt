@@ -4,6 +4,11 @@
 #include <stdexcept>
 #include "connectionclosedexception.h"
 
+/*
+*The main program for the client
+*/
+
+
 using namespace std;
 
 int main(int argc, char* argv[]){
@@ -24,12 +29,18 @@ int main(int argc, char* argv[]){
 		exit(1);
  	}
 
-	int command;
+	string command;
+	int com = 0;
 	client.printMenu();
 	while(cin >> command){
-		cout<<"ska execute command"<<endl;
-		client.executeCommand(command, conn);
+		try{
+		com = stoi(command);
+		client.executeCommand(com, conn);
 		client.printMenu();
+	}catch(exception& e){
+		cout<<"Only numbers between 1-8 are allowed"<<endl;
+	}
+		
 	}
 	
 }
