@@ -14,7 +14,7 @@ static unsigned int groupid = 0;
 class Diskdatabase : public DatabaseInterface {
 	
 public:
-	Diskdatabase() : DatabaseInterface(){}
+	Diskdatabase();
 	virtual list<Newsgroup> listNewsgroup() const override;
 	virtual bool createNewsgroup(std::string& title) override;
 	virtual bool deleteNewsgroup(unsigned int id) override;
