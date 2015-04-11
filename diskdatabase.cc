@@ -14,6 +14,8 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include <unistd.h>
+
 
 
 using namespace std;
@@ -23,8 +25,8 @@ DiskDatabase::DiskDatabase() : DatabaseInterface(), newsgroups() {
 	struct dirent *dirp;
 	//create folder if it does not already exist
 	
-	if((dp = opendir(ngs.c_str())) == nullptr){
-		mkdir(ngs.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	if((dp = opendir(rootfolder.c_str())) == nullptr){
+		mkdir(rootfolder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		cout<<"Ny mapp skapades"<<endl;
 	}
 	else {
@@ -40,34 +42,35 @@ DiskDatabase::DiskDatabase() : DatabaseInterface(), newsgroups() {
 }
 
 void DiskDatabase::createNewsgroupDisk(dirent*& dirp){
-		string filename = string(dirp->d_name);
-		string title = filename.substr(0, filename.find("-"));
-		cout<<"  "+filename<<endl;
-		string idnr = filename.substr(title.length()+1);
-		cout<<title<<endl;
-		int grid = stoi(idnr);
+		string filenameNoRoot = string(dirp->d_name);
+		string filename = rootfolder +"/"+ filenameNoRoot;
+		string title = filenameNoRoot.substr(0, filenameNoRoot.find("-"));
+		string idnr = filenameNoRoot.substr(title.length()+1);
+		unsigned int grid = stoi(idnr);
 		if(grid>=groupid){
 			groupid=grid+1;
 		}
-		newsgroups.insert(make_pair(groupid, Newsgroup(title, grid)));
+		newsgroups.insert(make_pair(grid, Newsgroup(title, grid)));
 		DIR* dp;
 		if ((dp = opendir(filename.c_str())) != nullptr) {
 		
 			while(((dirp = readdir(dp)) != nullptr)) {
 				if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, "..")){
-					ifstream text(dirp->d_name);
+					ifstream text(filename + "/"+ dirp->d_name);
 					if(text.is_open()){
-						size_t s1 = filename.find("-");
-						size_t s2 = filename.rfind("-");
-						string artTitle = filename.substr(0, s1);
-						string artId = filename.substr(s1+1, s2);
-						string author = filename.substr(s2+1);
+						string fname = string(dirp->d_name);
+						cout<<fname<<endl;
+						size_t s1 = fname.find("-");
+						size_t s2 = fname.rfind("-");
+						string artTitle = fname.substr(0, s1);
+						string author = fname.substr(s1+1, s2-s1-1);
+						string artId = fname.substr(s2+1);
 						string artText;
 						char c;
 						while(text >> c) {
 							artText += c;
 						}
-						int ID = stoi(artId);
+						unsigned int ID = stoi(artId);
 						if(ID>=artid){
 							artid=ID+1;
 						}
@@ -97,7 +100,7 @@ bool DiskDatabase::createNewsgroup(string& title) {
 		}
 	}
 	newsgroups.insert(make_pair(groupid, Newsgroup(title, groupid)));
-	string temp = ngs + "/" + title + "-" + to_string((groupid));
+	string temp = rootfolder +"/"+ title + "-" + to_string((groupid));
 	mkdir(temp.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	++groupid;
 	return true;
@@ -105,8 +108,37 @@ bool DiskDatabase::createNewsgroup(string& title) {
 
 bool DiskDatabase::deleteNewsgroup(unsigned int id) {
 	unsigned int temp = newsgroups.size();
+	string foldername = rootfolder;
+	try{
+		Newsgroup ng = newsgroups.at(id);
+		foldername += "/" + ng.getName();
+		foldername+="-"+to_string(id);
+		
+	}catch(out_of_range e){
+		return false;
+	}
 	newsgroups.erase(id);
-	return newsgroups.size()!=temp;
+	if(newsgroups.size()!=temp){
+		DIR* dp;
+		struct dirent* ep;
+		dp = opendir(foldername.c_str());
+		if(dp!=nullptr){
+			while((ep = readdir(dp)) != nullptr){
+				if(strcmp(ep->d_name, ".") && strcmp(ep->d_name, "..")){
+					string fileToRemove = foldername + "/" + string(ep->d_name);
+					remove(fileToRemove.c_str());
+				}
+			}
+			closedir(dp);
+			cout<<foldername<<endl;
+			rmdir(foldername.c_str());
+			return true;
+		}	
+	}
+	return false;
+	
+	
+	
 }
 
 list<Article> DiskDatabase::listArticlesInNewsgroup(unsigned int id) const {
@@ -119,19 +151,63 @@ list<Article> DiskDatabase::listArticlesInNewsgroup(unsigned int id) const {
 
 bool DiskDatabase::createArticle(unsigned int id, string title, string author, string text) {
 	if(newsgroups.find(id)!=newsgroups.end()){
-		return newsgroups.at(id).createArticle(author, title, text, artid);
-	}else{
-		return false;
+		string foldername = rootfolder;
+		try{
+			Newsgroup ng = newsgroups.at(id);
+			foldername += "/" + ng.getName();
+			foldername+="-"+to_string(id);
+			
+		}catch(out_of_range e){
+			return false;
+		}
+		DIR* dp;
+		dp = opendir(foldername.c_str());
+		if(dp!=nullptr){
+			string filename = foldername + "/"+ title +"-" + author +"-" + to_string(artid);
+			ofstream o;
+			o.open(filename);
+			o << text;
+			o.close();
+			closedir(dp);
+			cout<<filename<<endl;
+			return newsgroups.at(id).createArticle(author, title, text, artid++);
+		}
+			
+		
 	}
+	return false;
 	
 }
 
-bool DiskDatabase::deleteArticle(unsigned int groupid, unsigned int articleid) {
-	if(newsgroups.find(groupid)==newsgroups.end()){
+bool DiskDatabase::deleteArticle(unsigned int groupidparam, unsigned int articleid) {
+	if(newsgroups.find(groupidparam)==newsgroups.end()){
 		return false;
 	}
-	return newsgroups.at(groupid).deleteArticle(articleid);
+	
+	string foldername = rootfolder;
+	string filename;
+
+	try{
+		Newsgroup ng = newsgroups.at(groupidparam);
+		foldername += "/" + ng.getName();
+		foldername+="-"+to_string(groupidparam);
+		Article temp = getArticle(groupidparam, articleid);
+		filename = temp.getTitle()+"-"+temp.getAuthor()+"-"+to_string(temp.getId());
+		
+	}catch(out_of_range e){
+		return false;
+	}
+	DIR* dp;
+	dp = opendir(foldername.c_str());
+	if(dp!=nullptr){
+		string fileToRemove = foldername + "/" + filename;
+		remove(fileToRemove.c_str());
+		closedir(dp);
+		cout<<fileToRemove<<endl;
+	}
+	return newsgroups.at(groupidparam).deleteArticle(articleid);
 }
+
 Article DiskDatabase::getArticle(unsigned int groupid, unsigned int articleid) {
 	if(newsgroups.find(groupid)==newsgroups.end()){
 		throw out_of_range("could not find article");

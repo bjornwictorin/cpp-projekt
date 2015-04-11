@@ -12,8 +12,11 @@ bool Newsgroup::deleteArticle(int id){
 	auto it = articleList.begin();	
 	auto end = articleList.end();
 	Article a = Article("", "", "", id);
-	if(find(it, end, a) != end){
-		articleList.remove(*it);
+	//if((InputIterator index = find(it, end, a)) != end){
+	//	articleList.remove(*index);
+	auto pos = find(it, end, a);
+	if(pos != end) {
+		articleList.remove(*pos);
 		--count;
 		return true;
 	}else{

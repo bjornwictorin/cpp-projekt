@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
 		client.executeCommand(com, conn);
 		client.printMenu();
 	}catch(exception& e){
-		cout<<"Only numbers between 1-8 are allowed"<<endl;
+		cout<<"Only numbers betwaeen 1-8 are allowed"<<endl;
 	}
 		
 	}

@@ -60,6 +60,7 @@ bool Database::deleteArticle(unsigned int groupid, unsigned int articleid) {
 	}
 	return newsgroups.at(groupid).deleteArticle(articleid);
 }
+
 Article Database::getArticle(unsigned int groupid, unsigned int articleid) {
 	if(newsgroups.find(groupid)==newsgroups.end()){
 		throw out_of_range("could not find article");
